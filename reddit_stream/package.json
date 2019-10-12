@@ -1,0 +1,17 @@
+{
+  "name": "stream_reddit_comment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "dependencies": {
+    "newsapi": "^2.4.0",
+    "snoowrap": "^1.20.0",
+    "snoostorm-es6": "^1.0.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

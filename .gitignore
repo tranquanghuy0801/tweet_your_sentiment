@@ -1,2 +1,3 @@
-*.pdf
-*.json 
+*.pdf 
+.DS_Store
+.vscode
