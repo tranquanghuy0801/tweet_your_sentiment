@@ -19,23 +19,24 @@ const client = new Snoowrap({
 const s = new Snoostorm(client);
 const comments = s.Stream("comment", {
 	subreddit: "all",
-	results: 100, // defaults to 25, max is 100
+	results: 20, // defaults to 25, max is 100
 	pollTime: 5000
 });
 
-comments.on("item", comment => {
-	console.log('Comment of post: ' + comment.link_title);
-	console.log('Comment is: ' + comment.body);
-	request({
-		url: 'http://localhost:3000/reddit', // Put the load balancer url here after 
-		method: 'POST',
-		json: comment
-	}, function (err, res, body) {
-		if (!err && res.statusCode === 200) {
-			console.log(body);
-		}
+comments.on("item", (comment) => {
+	//console.log('Comment of post: ' + comment.link_title);
+	//console.log('Comment is: ' + comment.body);
+	if(comment !== null){
+		request({
+			url: 'http://localhost:3000/reddit', // Put the load balancer url here after 
+			method: 'POST',
+			json: comment
+		}, function (err, res, body) {
+			if(err){
+				console.log(err);
+			}
+		});
 	}
-);
 });
 
 comments.on("error", e => {
@@ -48,4 +49,4 @@ comments.on("end", () => {
 
 setTimeout(() => {
 	comments.emit("end");
-}, 3600000);
+}, 100000);
