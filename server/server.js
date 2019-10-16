@@ -15,6 +15,18 @@ app.use(cookieParser());
 
 // Web page routing
 app.use('/reddit', redditRouter);
+app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/scripts'));
+//app.use('/public', express.static(__dirname + "/public"));
+app.get('/index.html', (req, res) => {
+    fs.readFile('index.html', 'utf8', (err,data) => {
+        if (err) {
+            res.end('Could not find or open file for reading');
+        } else {
+            res.end(data);
+        }
+    });
+});
 
 app.listen(port, function () {
     console.log(`Express app listening at http://localhost:${port}/`);

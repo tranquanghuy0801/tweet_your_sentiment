@@ -1,0 +1,102 @@
+[
+    {
+        "Word": "A",
+        "Frequency": 20	
+    },
+    {
+        "Word" : "B",
+        "Frequency": 12
+    },
+    {
+        "Word" : "C",
+        "Frequency": 47
+    },
+    {
+        "Word" : "D",
+        "Frequency": 34
+    },
+    {
+        "Word" : "E",
+        "Frequency" : 54
+    },
+    {
+        "Word" : "F",
+        "Frequency" : 21
+    },
+    {
+        "Word" : "G",
+        "Frequency" : 57
+    },
+    {
+        "Word" : "H",
+        "Frequency" : 31
+    },
+    {
+        "Word" : "I",
+        "Frequency" : 17
+    },
+    {
+        "Word" : "J",
+        "Frequency" : 5
+    },
+    {
+        "Word" : "K",
+        "Frequency" : 23
+    },
+    {
+        "Word" : "L",
+        "Frequency" : 39
+    },
+    {
+        "Word" : "M",
+        "Frequency" : 29
+    },
+    {
+        "Word" : "N",
+        "Frequency" : 33
+    },
+    {
+        "Word" : "O",
+        "Frequency" : 18
+    },
+    {
+        "Word" : "P",
+        "Frequency" : 35
+    },
+    {
+        "Word" : "Q",
+        "Frequency" : 11
+    },
+    {
+        "Word" : "R",
+        "Frequency" : 45
+    },
+    {
+        "Word" : "S",
+        "Frequency" : 43
+    },
+    {
+        "Word" : "T",
+        "Frequency" : 28
+    },
+    {
+        "Word" : "U",
+        "Frequency" : 26
+    },
+    {
+        "Word" : "V",
+        "Frequency" : 30
+    },
+    {
+        "Word" : "X",
+        "Frequency" : 5
+    },
+    {
+        "Word" : "Y",
+        "Frequency" : 4
+    },
+    {
+        "Word" : "Z",
+        "Frequency" : 2
+    }
+    ]
