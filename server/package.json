@@ -7,8 +7,13 @@
     "aws-sdk": "^2.548.0",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.4",
+<<<<<<< HEAD
     "d3": "^5.12.0",
+=======
+    "documentdb": "^1.15.3",
+>>>>>>> ab2e5c64afa3b44c887b0f3396d83a623cc0c9ff
     "express": "^4.17.1",
+    "node-nlp": "^3.10.0",
     "nodemon": "^1.19.3",
     "sentiment": "^5.0.2"
   },

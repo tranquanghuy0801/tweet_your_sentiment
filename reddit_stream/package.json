@@ -5,8 +5,9 @@
   "main": "app.js",
   "dependencies": {
     "newsapi": "^2.4.0",
-    "snoowrap": "^1.20.0",
-    "snoostorm-es6": "^1.0.5"
+    "sentiment": "^5.0.2",
+    "snoostorm-es6": "^1.0.5",
+    "snoowrap": "^1.20.0"
   },
   "devDependencies": {},
   "scripts": {
