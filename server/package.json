@@ -8,10 +8,17 @@
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.4",
     "documentdb": "^1.15.3",
+    "es6": "0.0.7",
     "express": "^4.17.1",
-    "node-nlp": "^3.10.0",
+    "guardian-js": "^2.0.0",
+    "newsapi": "^2.4.0",
     "nodemon": "^1.19.3",
-    "sentiment": "^5.0.2"
+    "redis": "^2.8.0",
+    "sentiment": "^5.0.2",
+    "snoostorm-es6": "^1.0.5",
+    "snoowrap": "^1.20.0",
+    "stackexchange": "^1.2.0",
+    "tumblr.js": "^2.0.2"
   },
   "devDependencies": {},
   "scripts": {

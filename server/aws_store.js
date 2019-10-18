@@ -1,4 +1,5 @@
 const AWS = require('aws-sdk');
+const S3 = new AWS.S3();
 
 function createBucketPromise(bucketName){
     const bucketPromise = new AWS.S3({ apiVersion: '2006-03-01' }).createBucket({ Bucket: bucketName }).promise(); 
@@ -12,7 +13,7 @@ function createBucketPromise(bucketName){
 
 
 function store_comment(bucketName,comment){
-    const s3Key = `reddit-${comment.id}`;
+  const s3Key = `${comment.id}`;
 	const params = { Bucket: bucketName, Key: s3Key };
     return new AWS.S3({ apiVersion: '2006-03-01' }).getObject(params, (err, result) => {
         if(result){
@@ -36,5 +37,56 @@ function store_comment(bucketName,comment){
     });
 };
 
+const getDataUsingS3Select = async (params) => {
+    // 1
+    return new Promise((resolve, reject) => {
+      S3.selectObjectContent(params, (err, data) => {
+        if (err) { reject(err); }
+  
+        if (!data) {
+          reject('Empty data object');
+        }
+  
+        // This will be an array of bytes of data, to be converted
+        // to a buffer
+        const records = []
+  
+        // This is a stream of events
+        data.Payload.on('data', (event) => {
+          // There are multiple events in the eventStream, but all we 
+          // care about are Records events. If the event is a Records 
+          // event, there is data inside it
+          if (event.Records) {
+            records.push(event.Records.Payload);
+          }
+        })
+        .on('error', (err) => {
+          reject(err);
+        })
+        .on('end', () => {
+          // Convert the array of bytes into a buffer, and then
+          // convert that to a string
+          let planetString = Buffer.concat(records).toString('utf8');
+  
+          // 2
+          // remove any trailing commas
+          planetString = planetString.replace(/\,$/, '');
+  
+          // 3
+          // Add into JSON 'array'
+          planetString = `[${planetString}]`;
+  
+          try {
+            const planetData = JSON.parse(planetString);
+            resolve(planetData);
+          } catch (e) {
+            reject(new Error(`Unable to convert S3 data to JSON object. S3 Select Query: ${params.Expression}`));
+          }
+        });
+      });
+    })
+}
+
+module.exports.getDataUsingS3Select = getDataUsingS3Select;
 module.exports.createBucketPromise = createBucketPromise;
 module.exports.store_comment = store_comment;

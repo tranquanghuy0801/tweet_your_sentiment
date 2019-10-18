@@ -1,5 +1,5 @@
 {
-  "name": "client",
+  "name": "stream",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -10,8 +10,9 @@
     "debug": "~2.6.9",
     "ejs": "~2.6.1",
     "express": "~4.16.1",
+    "google-trends-api": "^4.9.0",
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1",
-    "request": "^2.88.0"
+    "twit": "^2.2.11"
   }
 }

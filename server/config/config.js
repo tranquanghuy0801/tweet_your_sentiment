@@ -1,26 +1,19 @@
-const config = {
-    reddit: {
-        CLIENT_ID: 'HmSvxCdQ5ET4ww',
-        CLIENT_SECRET: 's3qEBtpW9aAEKWuTz30J9uJvwSk',
-        REDDIT_USER: 'huytran0801',
-        REDDIT_PASS: 'Huydepzai1'
-    },
-    news: {
-        key: '41dcf83144f54d559886b79caff9273e'
-    },
-    endpoint: "https://harrycab432.documents.azure.com:443/",
-    primaryKey: "OBuzoI0xIZFCZbEWGCDhyxqQjy3DHLWE2Jh7Rfv0PazXzQu4u98tYTkIHBUYNn3S3dGPX9YPbSaHOWk3aNV1QQ==",
-    database: {
-        "id": "cab432-comments-stream"
-    },
-    redditcollection: {
-        "id": "RedditComments"
-    },
-    newscollection: {
-        "id": "NewsArticles"
-    }
-
+const creds = {
+    trendBucket: "trends-keyword",
+    tweetBucket: "cab432-tweet-trends"
 };
 
+function getFormattedDate(date) {
+	var year = date.getFullYear();
+  
+	var month = (1 + date.getMonth()).toString();
+	month = month.length > 1 ? month : '0' + month;
+  
+	var day = date.getDate().toString();
+	day = day.length > 1 ? day : '0' + day;
+	
+	return month + '-' + day + '-' + year;
+}
 
-module.exports = config;
+module.exports.getFormattedDate = getFormattedDate;
+module.exports.creds = creds;
