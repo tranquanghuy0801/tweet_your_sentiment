@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const viewsPath = __dirname + '/views/';
 const twitterRouter = require('./routes/twitterRouter');
 const app = express();
-port = 3001;
+const port = 3001;
 const server = require('http').Server(app);
 
 // Client side body and cookie parsing

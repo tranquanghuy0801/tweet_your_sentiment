@@ -1,13 +1,13 @@
 "use strict";
-
+const AWS = require('aws-sdk');
 const express = require('express');
 const config = require('../config/config');
 const router = express.Router();
 const S3 = require('../aws_store');
 const analysis = require('../scripts/commentAnalysis');
 
-S3.createBucketPromise(config.creds.tweetBucket);
-S3.createBucketPromise(config.creds.trendBucket);
+S3.createBucket(config.creds.tweetBucket);
+S3.createBucket(config.creds.trendBucket);
 
 
 // Router
@@ -27,7 +27,7 @@ router.post('/tweet', function (req, res) {
 	const tweet = req.body.tweet; 
 	const tags = req.body.tags;
 	analysis.sentimentAnalysis(tweet,tags).then(result => {
-		S3.store_comment(config.creds.tweetBucket,result);
+		S3.storeBucket(config.creds.tweetBucket,result);
 	}).catch(err => {
 		console.log(err);
 	})
@@ -38,21 +38,29 @@ router.post('/tweet', function (req, res) {
 
 // Receive POST from real-time trending topics in 
 router.post('/trends',function(req,res,next){
+	const key = 'cab432-trends-' + config.getFormattedDate(new Date());
+	const params = { Bucket: config.creds.trendBucket, Key: key };
+	const objectPromise = new AWS.S3({ apiVersion: '2006-03-01' }).deleteObject(params).promise();
+	objectPromise.then(result => {
+		console.log("Delete sucessfully");
+	}).catch(err => {
+		console.log(err);
+	})
 	const trends = req.body;
 	let results = {}; 
 	let tags = [];
 	trends.forEach(trend => {
 		if(trend.entityNames.length >= 1){
 			trend.entityNames.forEach(keyword => {
-				keyword = keyword.split().join('-');
+				keyword = keyword.split(' ').join('-');
 				console.log(keyword);
 				tags.push(keyword);
 			})
 		}
 	});
-	results.id = 'cab432-trends-' + config.getFormattedDate(new Date());
+	results.id = key;
 	results.tags = tags;
-	S3.store_comment(config.creds.trendBucket,results);
+	S3.storeBucket(config.creds.trendBucket,results);
 	res.sendStatus(200);
 })
 

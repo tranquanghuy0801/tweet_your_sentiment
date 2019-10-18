@@ -38,10 +38,10 @@ function getTrends() {
   });
 }
 
-// getTrends();
-// setTimeout(function(){
-//   getTrends();
-// },90000);
+getTrends();
+setTimeout(function(){
+  getTrends();
+},6000);
 
 async function parseTweets(body) {
   return new Promise((resolve) => {
