@@ -11,6 +11,7 @@ function sentimentAnalysis(text,tags,id) {
             console.log(result);
             output = {
                 "id": 'cab432-tweets-' + id,
+                "tags": tags,
                 "text": text,
                 "score": result.score,
                 "pos_words": result.pos_words,

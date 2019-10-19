@@ -85,9 +85,8 @@ router.get('/', function (req, res, next) {
 });
 
 
-router.post('/stream', async (req,res,next) => {
-	let tags = req.body.tags;
-	tags = tags.join('-').split('-');
+router.post('/stream', (req,res,next) => {
+	let tags = req.body.tags.split(' ');
 	if (stream === null) {
 		console.log('New Twitter Stream!');
 		stream = client.stream('statuses/filter', { track: tags, language: 'en' });
