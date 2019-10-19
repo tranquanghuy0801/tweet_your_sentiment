@@ -1,6 +1,6 @@
 const express = require('express');
 const AWS = require('aws-sdk');
-const config = require('../../server/config/config');
+const config = require('../config');
 const request = require('request');
 const router = express.Router();
 const server = "http://localhost:3002/stream";
@@ -10,37 +10,43 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-function getTags(){
-  const params = { Bucket: config.creds.trendBucket, Key: 'cab432-trends-' + config.getFormattedDate(new Date()) };
-  const tagPromise = new AWS.S3({ apiVersion: '2006-03-01' }).getObject(params).promise();
-  return new Promise((resolve,reject) => {
-    tagPromise.then(result => {
-      result = JSON.parse(result.Body.toString());
-      resolve(result.tags);
-    }).catch(err => {
-      reject(err);
-    })
-  });
+
+async function getTags(){
+	return new Promise(async (resolve) => {
+    const s3 = new AWS.S3();
+    let tags = [];
+		const params = {
+			Bucket: config.creds.trendBucket,
+			Delimiter: '/',
+			Prefix:  'cab432-trends-'
+		};
+
+		const data = await s3.listObjects(params).promise();
+		for (let index = 1; index < data['Contents'].length; index++) {
+			let text = data['Contents'][index]['Key'].replace('cab432-trends-','');
+			if(!tags.includes(text)){
+				tags.push(text);
+			}
+    }
+    resolve(tags);
+	})
 }
 
-router.get('/search', function (req, res, next) {
-  let tags = req.query.tags;
-  getTags().then(result => {
-    if (tags) {
-      request({
-        url: server,
-        method: 'POST',
-        form: { tags: tags }
-      }, function (err, res, body) {
-        if (!err) {
-          console.log('Stream STOP Response: ' + res);
-        } else {
-          console.log('Unable to connect to stream server!');
-        }
-      });
-    } else {
-      console.log("Cannot extract tags");
-    }
+router.get('/search',async function (req, res, next) {
+  await getTags().then(result => {
+    let tags = result.join('-').split('-');
+    console.log(tags);
+    request({
+      url: server,
+      method: 'POST',
+      form: { tags: tags}
+    }, function (err, res, body) {
+      if (!err) {
+        console.log('Stream STOP Response: ' + res);
+      } else {
+        console.log('Unable to connect to stream server!');
+      }
+    });
   });
   res.sendStatus(200);
 });

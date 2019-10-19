@@ -38,29 +38,19 @@ router.post('/tweet', function (req, res) {
 
 // Receive POST from real-time trending topics in 
 router.post('/trends',function(req,res,next){
-	const key = 'cab432-trends-' + config.getFormattedDate(new Date());
-	const params = { Bucket: config.creds.trendBucket, Key: key };
-	const objectPromise = new AWS.S3({ apiVersion: '2006-03-01' }).deleteObject(params).promise();
-	objectPromise.then(result => {
-		console.log("Delete sucessfully");
-	}).catch(err => {
-		console.log(err);
-	})
-	const trends = req.body;
-	let results = {}; 
-	let tags = [];
-	trends.forEach(trend => {
-		if(trend.entityNames.length >= 1){
-			trend.entityNames.forEach(keyword => {
-				keyword = keyword.split(' ').join('-');
-				console.log(keyword);
-				tags.push(keyword);
-			})
+	let result = {};
+	let keyword = req.body.keyword;
+	keyword = 'cab432-trends-' + keyword.split(' ').join('-');
+	const params = { Bucket: config.creds.trendBucket, Key: keyword };
+	new AWS.S3({ apiVersion: '2006-03-01' }).getObject(params,(err,data) => {
+		if(data){
+			console.log("The keyword already exists");
 		}
-	});
-	results.id = key;
-	results.tags = tags;
-	S3.storeBucket(config.creds.trendBucket,results);
+		else{
+			result.id = keyword;
+			S3.storeBucket(config.creds.trendBucket, result);
+		}
+	})
 	res.sendStatus(200);
 })
 
