@@ -89,13 +89,19 @@ function getDocument(collectionId,document) {
 /**
  * Query the collection using SQL
  */
-function queryCollection(collectionId,column) {
+function queryCollection(collectionId,column,tags) {
+    let query;
+    if(tags === ''){
+        query = 'SELECT VALUE r.' + column + ' FROM root r';
+    }
+    else{
+        query = 'SELECT VALUE r.' + column + ' FROM root r' + ' WHERE r.tags = "' + tags + '"';
+    }
     console.log(`Querying collection through index:\n${collectionId}`);
     let collectionUrl = uriFactory.createDocumentCollectionUri(databaseId, collectionId);
     return new Promise((resolve, reject) => {
         client.queryDocuments(
-            collectionUrl,
-            'SELECT VALUE r.' + column + ' FROM root r'
+            collectionUrl, query 
         ).toArray((err, results) => {
             if (err) reject(err)
             else {

@@ -8,15 +8,17 @@
 		<h1><%= title %></h1>
 		<p>Welcome to <%= title %></p>
 		<h2>The trends in Australia</h2>
+		<form action ='/' method = 'GET'>
 			<% if(tags.length > 0)  { %>
 				<% for(i = 0; i < tags.length;i++) { %>
 					<ul>
 						<li>
-							<%= tags[i] %>
+							<% let text = tags[i].split(' ').join('-') %>
+							<a href="/?tags=<%= text %>"><%= tags[i] %></a>
 						</li>
 					</ul>
 				<% } %>
-			<% } %> 
-		
+			<% } %>  
+		</form>
 	</body>
 </html>

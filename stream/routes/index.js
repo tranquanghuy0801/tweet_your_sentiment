@@ -86,7 +86,7 @@ router.get('/', function (req, res, next) {
 
 
 router.post('/stream', (req,res,next) => {
-	let tags = req.body.tags.split(' ');
+	let tags = req.body.tags.split('-');
 	if (stream === null) {
 		console.log('New Twitter Stream!');
 		stream = client.stream('statuses/filter', { track: tags, language: 'en' });
@@ -98,7 +98,7 @@ router.post('/stream', (req,res,next) => {
 					form: {
 						id: tweet.id_str,
 						tweet: result,
-						tags: tags
+						tags: req.body.tags
 					}
 				}, function (err, res, body) {
 					if (err) {
