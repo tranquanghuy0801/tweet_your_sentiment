@@ -7,15 +7,8 @@
     "aws-sdk": "^2.548.0",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.4",
-<<<<<<< HEAD
     "d3": "^5.12.0",
-=======
     "documentdb": "^1.15.3",
-<<<<<<< HEAD
->>>>>>> ab2e5c64afa3b44c887b0f3396d83a623cc0c9ff
-=======
-    "es6": "0.0.7",
->>>>>>> 2e912896776f4eb409845946d24ec7460c80a04a
     "express": "^4.17.1",
     "guardian-js": "^2.0.0",
     "newsapi": "^2.4.0",

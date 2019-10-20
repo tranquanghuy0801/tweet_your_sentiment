@@ -1,9 +1,9 @@
 const creds = {
     trendBucket: "trends-keyword",
 	tweetBucket: "cab432-tweet-trends",
-	endpoint: "https://harry-cab432.documents.azure.com:443/",
+	endpoint: "https://cab432-assignment2.documents.azure.com:443/",
 	primaryKey: {
-		"id": "CJjrU7mWcspjbRz6fTxDSKmSoc2NIcgIK0q3kkn2Ikjtn5zzSJJfxi6Lwuq0STwyVrCEUwRt1771M8KNfMMThA=="
+		"id": "t3jacVS6dEwsUk0XQbHGXWAx36X8oOoBy4eQb6eDUj8GNqXSYtZrI62X5JwRQNs8ytRy1x7In50LdSJQEg55rA=="
 	},
 	database: {
 		"id" : "cab432-assignment-cloud"
