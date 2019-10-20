@@ -1,4 +1,4 @@
 node_modules
 *.pdf
 .DS_Store
-test.js
+test_aws.js

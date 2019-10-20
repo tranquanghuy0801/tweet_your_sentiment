@@ -3,9 +3,9 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const viewsPath = __dirname + '/views/';
-const redditRouter = require('./routes/redditRouter');
+const twitterRouter = require('./routes/twitterRouter');
 const app = express();
-port = 3000;
+const port = 3001;
 const server = require('http').Server(app);
 
 // Client side body and cookie parsing
@@ -14,6 +14,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 // Web page routing
+<<<<<<< HEAD
 app.use('/reddit', redditRouter);
 app.use(express.static(__dirname + '/public'));
 app.use(express.static(__dirname + '/scripts'));
@@ -27,6 +28,9 @@ app.get('/index.html', (req, res) => {
         }
     });
 });
+=======
+app.use('/', twitterRouter);
+>>>>>>> 2e912896776f4eb409845946d24ec7460c80a04a
 
 app.listen(port, function () {
     console.log(`Express app listening at http://localhost:${port}/`);

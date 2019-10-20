@@ -11,11 +11,21 @@
     "d3": "^5.12.0",
 =======
     "documentdb": "^1.15.3",
+<<<<<<< HEAD
 >>>>>>> ab2e5c64afa3b44c887b0f3396d83a623cc0c9ff
+=======
+    "es6": "0.0.7",
+>>>>>>> 2e912896776f4eb409845946d24ec7460c80a04a
     "express": "^4.17.1",
-    "node-nlp": "^3.10.0",
+    "guardian-js": "^2.0.0",
+    "newsapi": "^2.4.0",
     "nodemon": "^1.19.3",
-    "sentiment": "^5.0.2"
+    "redis": "^2.8.0",
+    "sentiment": "^5.0.2",
+    "snoostorm-es6": "^1.0.5",
+    "snoowrap": "^1.20.0",
+    "stackexchange": "^1.2.0",
+    "tumblr.js": "^2.0.2"
   },
   "devDependencies": {},
   "scripts": {
