@@ -3,11 +3,11 @@ const express = require('express');
 const config = require('../config/config');
 const redis = require('redis');
 const router = express.Router();
+const googleTrends = require('google-trends-api');
 const documentDB = require('../documentDB');
-const analysis = require('../scripts/commentAnalysis');
+const analysis = require('../scripts/helper');
+const Twitter = require('twit');
 
-// S3.createBucket(config.creds.tweetBucket);
-// S3.createBucket(config.creds.trendBucket);
 documentDB.getDatabase().then(() => {
 	documentDB.getCollection(config.creds.tweetCollection.id);
 }).then(() => {
@@ -15,6 +15,50 @@ documentDB.getDatabase().then(() => {
 }).catch(err => {
 	console.log(err);
 })
+
+// Twit Configuration
+const client = new Twitter({
+	consumer_key: config.creds.twitter.consumer_key,
+	consumer_secret: config.creds.twitter.consumer_secret,
+	access_token: config.creds.twitter.access_token,
+	access_token_secret: config.creds.twitter.access_token_secret
+})
+
+let stream = null;
+
+let output = {}; 
+output.data = [];
+
+function getTrends() {
+	googleTrends.realTimeTrends({
+		geo: 'AU',
+		category: 'all',
+	}, function (err, results) {
+		if (err) {
+			console.log(err);
+		} else {
+			const trends = JSON.parse(results);
+			trends.storySummaries.trendingStories.forEach(trend => {
+				if (trend.entityNames.length >= 1) {
+					trend.entityNames.forEach(keyword => {
+						let result = {};
+						keyword = 'cab432-trends-' + keyword.split(' ').join('-');
+						result.id = keyword;
+						if (!documentDB.doesDocumentExist(config.creds.trendCollection.id, keyword)) {
+							console.log("The keyword exists in database");
+						} else {
+							documentDB.getDocument(config.creds.trendCollection.id, result);
+						}
+					})
+				}
+			});
+		}
+	});
+}
+
+getTrends();
+// Run every 15 seconds to update the trend topics 
+setInterval(getTrends,90000);
 
 
 // Router
@@ -28,55 +72,74 @@ router.get('/', function (req, res) {
 	console.log("Index");
 });
 
-// Receive POST from tweets and tags associated 
-router.post('/tweet', function (req, res) {
-	//Save in S3 Storage 
-	const tweet = req.body.tweet;
-	const tags = req.body.tags;
-	const id = req.body.id;
-	analysis.sentimentAnalysis(tweet, tags, id).then(result => {
-		//S3.storeBucket(config.creds.tweetBucket, result);
-		documentDB.getDocument(config.creds.tweetCollection.id,result);
-	}).catch(err => {
-		console.log(err);
-	})
-	res.sendStatus(200);
+let tags;
 
+router.post('/stream', (req,res,next) => {
+	tags = req.body.tags.split('-');
+	if (stream === null) {
+		console.log('New Twitter Stream!');
+		stream = client.stream('statuses/filter', { track: tags, language: 'en' });
+		stream.on('tweet', function (tweet) {
+			analysis.parseTweets(tweet).then(result => {
+				analysis.sentimentAnalysis(result,tags,tweet.id_str).then(result => {
+					//S3.storeBucket(config.creds.tweetBucket, result);
+					documentDB.getDocument(config.creds.tweetCollection.id,result);
+				}).catch(err => {
+					console.log(err);
+				})
+			})
+		});
+	}
+	else {
+		stream.destroy();
+		console.log("Stop the old stream and start the new stream!");
+		stream = client.stream('statuses/filter', { track: tags, language: 'en' });
+
+		stream.on('tweet', function (tweet) {
+			analysis.parseTweets(tweet).then(result => {
+				analysis.sentimentAnalysis(result,tags,tweet.id_str).then(result => {
+					//S3.storeBucket(config.creds.tweetBucket, result);
+					documentDB.getDocument(config.creds.tweetCollection.id,result);
+				}).catch(err => {
+					console.log(err);
+				})
+			})
+		})
+
+		setTimeout(function () {
+			stream.destroy();
+			console.log('Stream Destroyed due to delay!');
+		}, 900000);
+	}
+	stream.on('limit', function (message) {
+		console.log("Limit Reached: " + message);
+	});
+
+	stream.on('disconnect', function (message) {
+		console.log("Ooops! Disconnected: " + message);
+	});
+	stream.on('error', function (message) {
+		console.log("Ooops! Error: " + message);
+	});
 });
 
-
-// Receive POST from real-time trending topics in 
-router.post('/trends', function (req, res, next) {
+router.get('/stats', async function (req, res, next) {
+	let tags = req.query.tags;
 	let result = {};
-	let keyword = req.body.keyword;
-	keyword = 'cab432-trends-' + keyword.split(' ').join('-');
-	result.id = keyword;
-	if(!documentDB.doesDocumentExist(config.creds.trendCollection.id,keyword)){
-		console.log("The keyword exists in database");
-	} else {
-		documentDB.getDocument(config.creds.trendCollection.id,result);
-	}
-	// const params = { Bucket: config.creds.trendBucket, Key: keyword };
-	// new AWS.S3({ apiVersion: '2006-03-01' }).getObject(params, (err, data) => {
-	// 	if (data) {
-	// 		console.log("The keyword already exists");
-	// 	}
-	// 	else {
-	// 		result.id = keyword;
-	// 		S3.storeBucket(config.creds.trendBucket, result);
-	// 	}
-	// })
-	res.sendStatus(200);
-})
+	await getScores('score', tags).then(data => {
+		result.score = data;
+		res.json(result);
+	}).catch(err => {
+		console.log(err);
 
-router.get('/stats', function (req, res, next) {
-
+	})
 
 })
 
-function getScores(){
+
+function getScores(column,tags){
 	return new Promise((resolve) => {
-	  documentDB.queryCollection(config.creds.tweetCollection.id,"score")
+	  documentDB.queryCollection(config.creds.tweetCollection.id,column,tags)
 	  .then(results => {
 		if(results){
 		  resolve(results);

@@ -10,6 +10,7 @@
     "d3": "^5.12.0",
     "documentdb": "^1.15.3",
     "express": "^4.17.1",
+    "google-trends-api": "^4.9.0",
     "guardian-js": "^2.0.0",
     "newsapi": "^2.4.0",
     "nodemon": "^1.19.3",
@@ -18,7 +19,8 @@
     "snoostorm-es6": "^1.0.5",
     "snoowrap": "^1.20.0",
     "stackexchange": "^1.2.0",
-    "tumblr.js": "^2.0.2"
+    "tumblr.js": "^2.0.2",
+    "twit": "^2.2.11"
   },
   "devDependencies": {},
   "scripts": {

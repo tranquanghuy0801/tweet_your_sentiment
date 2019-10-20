@@ -8,7 +8,6 @@ function sentimentAnalysis(text,tags,id) {
         if(text !== undefined){
             text = text.replace(/[^a-zA-Z ]/g, "");
             const result = sentiment.analyze(text);
-            console.log(result);
             output = {
                 "id": 'cab432-tweets-' + id,
                 "tags": tags,
@@ -22,4 +21,29 @@ function sentimentAnalysis(text,tags,id) {
     });
 };
 
+async function parseTweets(body) {
+	return new Promise((resolve) => {
+		let tweet = body;
+		let tweetMessage = '';
+		if (tweet != undefined) {
+			if (tweet.extended_tweet) {
+				tweetMessage = tweet.extended_tweet.full_text;
+			} else {
+				if (tweet.retweeted_status) {
+					if (tweet.retweeted_status.extended_tweet) {
+						tweetMessage = tweet.retweeted_status.extended_tweet.full_text;
+					} else {
+						tweetMessage = tweet.retweeted_status.text;
+					}
+				} else {
+					tweetMessage = tweet.text;
+				}
+			}
+		}
+		resolve(tweetMessage);
+	});
+};
+
+
+module.exports.parseTweets = parseTweets;
 module.exports.sentimentAnalysis = sentimentAnalysis;
