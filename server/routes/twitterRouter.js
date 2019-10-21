@@ -26,8 +26,6 @@ const client = new Twitter({
 
 let stream = null;
 
-let output = {}; 
-output.data = [];
 
 function getTrends() {
 	googleTrends.realTimeTrends({
@@ -91,7 +89,7 @@ router.post('/stream', (req,res,next) => {
 		});
 	}
 	else {
-		stream.destroy();
+		stream.stop();
 		console.log("Stop the old stream and start the new stream!");
 		stream = client.stream('statuses/filter', { track: tags, language: 'en' });
 
@@ -123,12 +121,38 @@ router.post('/stream', (req,res,next) => {
 	});
 });
 
+function getScores(column, tags) {
+	return new Promise((resolve) => {
+		documentDB.queryCollection(config.creds.tweetCollection.id, column, tags)
+			.then(results => {
+				if (results) {
+					resolve(results);
+				}
+			}).catch(err => {
+				console.log(err);
+			})
+	});
+}
+
 router.get('/stats', async function (req, res, next) {
 	let tags = req.query.tags;
 	let result = {};
-	await getScores('score', tags).then(data => {
-		result.score = data;
-		res.json(result);
+	await getScores('score', tags).then(async data => {
+		//result.score = data;
+		// res.json(result);
+		if (data.length === 0) {
+			let delayres = await delay(3000);
+			await getScores('score', tags).then(async data => {
+				result.score = data;
+				res.json(result);
+			}).catch(err => {
+				console.log(err);
+			})
+		}
+		else {
+			result.score = data;
+			res.json(result);
+		}
 	}).catch(err => {
 		console.log(err);
 
@@ -136,17 +160,11 @@ router.get('/stats', async function (req, res, next) {
 
 })
 
-
-function getScores(column,tags){
-	return new Promise((resolve) => {
-	  documentDB.queryCollection(config.creds.tweetCollection.id,column,tags)
-	  .then(results => {
-		if(results){
-		  resolve(results);
-		}
-	  }).catch(err => {
-		console.log(err);
-	  })
+async function delay(delayInms) {
+	return new Promise(resolve => {
+		setTimeout(() => {
+			resolve(2);
+		}, delayInms);
 	});
 }
 

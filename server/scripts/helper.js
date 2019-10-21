@@ -7,15 +7,16 @@ function sentimentAnalysis(text,tags,id) {
     return new Promise((resolve) => {
         if(text !== undefined){
             text = text.replace(/[^a-zA-Z ]/g, "");
-            const result = sentiment.analyze(text);
+			const result = sentiment.analyze(text);
             output = {
                 "id": 'cab432-tweets-' + id,
-                "tags": tags,
+                "tags": tags.join('-'),
                 "text": text,
                 "score": result.score,
                 "pos_words": result.pos_words,
                 "neg_word": result.neg_word
-            };
+			};
+			console.log(output);
             resolve(output);
         }
     });

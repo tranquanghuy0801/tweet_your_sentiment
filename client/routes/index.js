@@ -5,6 +5,7 @@ const request = require('request');
 const router = express.Router();
 const server = "http://localhost:3001";
 
+
 function getTags() {
   return new Promise((resolve) => {
     documentDB.queryCollection(config.creds.trendCollection.id, 'id', '')
@@ -21,48 +22,67 @@ function getTags() {
   });
 } 
 
-
+router.get('/search',function(req,res,next){
+  let tags = req.query.tags;
+  let score;
+  const options = {
+    url: server + '/stats',
+    qs: {
+      tags: tags
+    }
+  }
+  request.get(options,function(err,response,body){
+    if(!err){
+      let json = JSON.parse(body);
+      if(json.score.length == 0){
+        score = 0;
+      }
+      else{
+        score = json.score.reduce(function(a, b){return a+b;});
+      }
+      res.render('score', { title: 'Express' , score: score});
+    }
+    else{
+      res.render('score', { title: 'Express' , score: 0});
+    }    
+  })
+})
 
 
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
   let tags = req.query.tags;
-  getTags().then(result => {
+  getTags().then(async result => {
     result = result.map(text => {
       return text.replace(/[^\w\s]/gi, ' ');
     })
     let json;
+    let score;
     if (tags) {
       request({
         url: server + '/stream',
         method: 'POST',
         form: { tags: tags }
-      }, function (err, res, body) {
+      }, function (err, response, body) {
         if (!err) {
           json = JSON.parse(body);
           console.log(json);
-          console.log('Stream STOP Response: ' + res);
+          console.log('Stream STOP Response: ' + response);
         } else {
           console.log('Unable to connect to stream server!');
         }
       })
-      let options = {
-        url: server + '/stats',
-        qs: {
-          tags: tags
-        }
-      };
-      request.get(options,function(err,res,body){
-          let json = JSON.parse(body);
-          console.log(json);
-      })
-      res.render('index', { title: 'Express', tags: result });
+      res.redirect('/search?tags=' + tags);
+
+      
     }
     else {
-      res.render('index', { title: 'Express', tags: result });
+      res.render('index', { title: 'Express', tags: result , score: 0});
     }
   });
 });
 
 module.exports = router;
+
+
