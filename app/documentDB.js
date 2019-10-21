@@ -88,13 +88,16 @@ function getDocument(collectionId,document) {
 /**
  * Query the collection using SQL
  */
-function queryCollection(collectionId,column,tags) {
+function queryCollection(collectionId,column,condition) {
     let query;
-    if(tags === ''){
+    if(condition === ''){
         query = 'SELECT VALUE r.' + column + ' FROM root r';
     }
+    else if(condition.includes('cab432-trends-') || condition.includes('cab432-tweets-')){
+        query = 'SELECT VALUE r.' + column + ' FROM root r' + ' WHERE r.id = "' + condition + '"';
+    }
     else{
-        query = 'SELECT VALUE r.' + column + ' FROM root r' + ' WHERE r.tags = "' + tags + '"';
+        query = 'SELECT VALUE r.' + column + ' FROM root r' + ' WHERE r.tags = "' + condition + '"';
     }
     console.log(`Querying collection through index:\n${collectionId}`);
     let collectionUrl = uriFactory.createDocumentCollectionUri(databaseId, collectionId);
