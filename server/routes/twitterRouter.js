@@ -54,9 +54,9 @@ function getTrends() {
 	});
 }
 
-getTrends();
-// Run every 15 seconds to update the trend topics 
-setInterval(getTrends,90000);
+// getTrends();
+// // Run every 15 seconds to update the trend topics 
+// setInterval(getTrends,90000);
 
 
 // Router

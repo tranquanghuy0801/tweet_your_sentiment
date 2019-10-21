@@ -2,10 +2,13 @@
 <html>
 	<head>
 		<title><%= title %></title>
+		<meta charset="UTF-8">
 		<link rel='stylesheet' href='/stylesheets/style.css' />
+		<script type="text/javascript" src="/javascripts/dj3sTest.js"></script> 
+		<script src="https://d3js.org/d3.v4.js"></script>
 	</head>
 	<body>
-		<h1><%= title %></h1>
+		<!-- <h1><%= title %></h1>
 		<p>Welcome to <%= title %></p>
 		<h2>The trends in Australia</h2>
 		<form action ='/' method = 'GET'>
@@ -22,6 +25,9 @@
 		</form>
 		<% if(score !== undefined) { %>
 			<h3><%= score %>
-		<% } %>
+		<% } %> -->
+		<div class="inner-container">
+				<div id="my_dataviz"></div>
+		</div>
 	</body>
 </html>
