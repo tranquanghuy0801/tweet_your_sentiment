@@ -37,7 +37,7 @@ const client = new Twitter({
 
 let stream = null;
 
-
+// Function to get trends from Google Trends 
 function getTrends() {
 	googleTrends.realTimeTrends({
 		geo: 'AU',
@@ -76,6 +76,11 @@ function getTrends() {
 	});
 }
 
+// getTrends();
+// // Run every 15 seconds to update the trend topics 
+// setInterval(getTrends, 90000);
+
+// Get all scores for a specific trend keyword 
 function getScores(column, tags) {
 	let redisKey = 'cab432tweets:' + tags;
 	return new Promise((resolve) => {
@@ -109,11 +114,7 @@ function getScores(column, tags) {
 	});
 }
 
-
-getTrends();
-// Run every 15 seconds to update the trend topics 
-setInterval(getTrends, 90000);
-
+// Function get all of the trend keywords
 function getTags() {
 	return new Promise((resolve) => {
 		redisClient.keys('cab432trends:*',function(err,trends){
@@ -147,6 +148,8 @@ router.use(function (req, res, next) {
 	next();
 });
 
+// Router POST 
+// Receive tags from user to start streaming 
 router.post('/stream', (req, res, next) => {
 	let tags = req.body.tags.split('-');
 	let redisKey = 'cab432tweets:' + req.body.tags;
@@ -224,9 +227,8 @@ router.post('/stream', (req, res, next) => {
 	});
 });
 
-router.get('/search', async function (req, res, next) {
-	let tags = req.query.tags;
-	//let result = {};
+// Function to render index page 
+async function renderIndex(res,result,tags){
 	let score;
 	await getScores('score', tags).then(async data => {
 		//result.score = data;
@@ -240,21 +242,20 @@ router.get('/search', async function (req, res, next) {
 				else{
 					score = data.reduce(function (a, b) { return a + b; });
 				}
-				res.render('score', { title: 'Express', score: score });
+				res.render('index', { tags: tags, trends: result, score: score });
 			}).catch(err => {
 				console.log(err);
 			})
 		}
 		else {
 			score = data.reduce(function (a, b) { return a + b; });
-			res.render('score', { title: 'Express', score: score });
+			res.render('index',  { tags: tags, trends: result, score: score });
 		}
 	}).catch(err => {
 		console.log(err);
 
 	})
-
-})
+}
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -278,10 +279,10 @@ router.get('/', function (req, res, next) {
 					console.log('Unable to connect to stream server!');
 				}
 			})
-			res.redirect('/search?tags=' + tags);
+			renderIndex(res,result,tags);
 		}
 		else {
-			res.render('index', { title: 'Express', tags: result, score: 0 });
+			res.render('index',  { tags: undefined, trends: result, score: undefined });
 		}
 	});
 });
