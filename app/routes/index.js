@@ -6,7 +6,7 @@ const request = require('request');
 const router = express.Router();
 const googleTrends = require('google-trends-api');
 const documentDB = require('../documentDB');
-const analysis = require('../scripts/helper');
+const helper = require('../scripts/helper');
 const Twitter = require('twit');
 const server = 'http://localhost:3000';
 
@@ -51,27 +51,24 @@ function getTrends() {
 				if (trend.entityNames.length >= 1) {
 					trend.entityNames.forEach(keyword => {
 						let result = {};
-						// let redisKey = 'cab432trends:' + keyword.split(' ').join('-');
+						let redisKey = 'cab432trends:' + keyword.split(' ').join('-');
 						keyword = 'cab432-trends-' + keyword.split(' ').join('-');
 						result.id = keyword;
-						if(documentDB.doesDocumentExist(config.creds.trendCollection.id, result) === null){
-							documentDB.getDocument(config.creds.trendCollection.id, result);
-						}
-						
-						// redisClient.get(redisKey, (err, data) => {
-						//   if(data){
-						//     console.log("Data in Redis");
-						//   }
-						//   else {
-						//     if (documentDB.queryCollection(config.creds.trendCollection.id, 'id', keyword) === undefined) {
-						//       redisClient.setex(redisKey, 3600, JSON.stringify({ source: 'Redis Cache', ...result, }));
-						//       documentDB.getDocument(config.creds.trendCollection.id, result);
-						//     } else {
-						//       console.log("The keyword exists in DocumentDB database");
-						//       redisClient.setex(redisKey, 3600, JSON.stringify({ source: 'Redis Cache', ...result, }));
-						//     }
-						//   }
-						// })
+						redisClient.get(redisKey, (err, data) => {
+							if (data) {
+								console.log("Data in Redis");
+							}
+							else {
+								if (documentDB.doesDocumentExist(config.creds.trendCollection.id, result) === null) {
+									console.log("Save trends to both Redis and Azure");
+									redisClient.setex(redisKey, 3600, JSON.stringify(result));
+									documentDB.getDocument(config.creds.trendCollection.id, result);
+								} else {
+									console.log("The keyword exists in DocumentDB database, save to Redis");
+									redisClient.setex(redisKey, 3600, JSON.stringify(result));
+								}
+							}
+						})
 					})
 				}
 			});
@@ -112,33 +109,37 @@ function getScores(column, tags) {
 	});
 }
 
-async function delay(delayInms) {
-	return new Promise(resolve => {
-		setTimeout(() => {
-			resolve(2);
-		}, delayInms);
-	});
-}
-
-function getTags() {
-	return new Promise((resolve) => {
-		documentDB.queryCollection(config.creds.trendCollection.id, 'id', '')
-			.then(results => {
-				if (results) {
-					results = results.map(text => {
-						return text.replace('cab432-trends-', '');
-					})
-					resolve(results);
-				}
-			}).catch(err => {
-				console.log(err);
-			})
-	});
-}
 
 getTrends();
 // Run every 15 seconds to update the trend topics 
 setInterval(getTrends, 90000);
+
+function getTags() {
+	return new Promise((resolve) => {
+		redisClient.keys('cab432trends:*',function(err,trends){
+			if(trends){
+				trends = trends.map(text => {
+					return text.replace('cab432trends:', '');
+				})
+				console.log("Get trends from Redis");
+				resolve(trends);
+			} else {
+				documentDB.queryCollection(config.creds.trendCollection.id, 'id', '')
+					.then(results => {
+						if (results) {
+							results = results.map(text => {
+								return text.replace('cab432-trends-', '');
+							})
+							console.log("Get trends from azure");
+							resolve(results);
+						}
+					}).catch(err => {
+						console.log(err);
+					})
+			}
+		})
+	});
+}
 
 // Router
 router.use(function (req, res, next) {
@@ -153,12 +154,12 @@ router.post('/stream', (req, res, next) => {
 		console.log('New Twitter Stream!');
 		stream = client.stream('statuses/filter', { track: tags, language: 'en' });
 		stream.on('tweet', function (tweet) {
-			analysis.parseTweets(tweet).then(result => {
-				analysis.sentimentAnalysis(result, tags, tweet.id_str).then(result => {
+			helper.parseTweets(tweet).then(result => {
+				helper.sentimentAnalysis(result, tags, tweet.id_str).then(result => {
 					redisClient.hgetall(redisKey, (err, data) => {
 						if(data){
 								if(data[result.id] === undefined){
-									console.log("Save to both Redis and S3");
+									console.log("Save to both Redis and Azure");
 									redisClient.hset(redisKey, result.id, JSON.stringify(result));
 									documentDB.getDocument(config.creds.tweetCollection.id, result);
 								} else{ 
@@ -182,8 +183,8 @@ router.post('/stream', (req, res, next) => {
 		console.log("Stop the old stream and start the new stream!");
 		stream = client.stream('statuses/filter', { track: tags, language: 'en' });
 		stream.on('tweet', function (tweet) {
-			analysis.parseTweets(tweet).then(result => {
-				analysis.sentimentAnalysis(result, tags, tweet.id_str).then(result => {
+			helper.parseTweets(tweet).then(result => {
+				helper.sentimentAnalysis(result, tags, tweet.id_str).then(result => {
 					redisClient.hgetall(redisKey, (err, data) => {
 						if(data){
 								if(data[result.id] === undefined){
@@ -231,7 +232,7 @@ router.get('/search', async function (req, res, next) {
 		//result.score = data;
 		// res.json(result);
 		if (data.length === 0) {
-			let delayres = await delay(3000);
+			let delayres = await helper.delay(3000);
 			await getScores('score', tags).then(async data => {
 				if(data.length === 0){
 					score = 0;

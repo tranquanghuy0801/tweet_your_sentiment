@@ -10,6 +10,14 @@ const csvWriter = createCSVWriter( {
     ]
 });
 
+async function delay(delayInms) {
+	return new Promise(resolve => {
+		setTimeout(() => {
+			resolve(2);
+		}, delayInms);
+	});
+}
+
 function sentimentAnalysis(text, tags, id) {
 	let output = {};
 	return new Promise((resolve) => {
@@ -95,6 +103,7 @@ function saveCSV(word_count) {
 		.then(() => console.log('The CSV file was written Successfully'));
 }
 
+module.exports.delay = delay;
 module.exports.parseData = parseData;
 module.exports.saveCSV = saveCSV;
 module.exports.parseTweets = parseTweets;

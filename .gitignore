@@ -1,6 +1,6 @@
-server/
 test_folder/
-client/
+client_folder/
+server_folder/
 *.pdf 
 .DS_Store
 .vscode

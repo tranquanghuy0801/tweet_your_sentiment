@@ -8,20 +8,20 @@ client.on("error", function (err) {
 	console.log("Error " + err);
 });
 
-client.set("string key", "string val", redis.print);
-client.set("harry","annie",redis.print);
+const result = {
+	"name": "harry"
+}
+
+client.setex("cab432-trends-james",3600, JSON.stringify(result), redis.print);
+client.setex("cab432-trends-harry",3600, JSON.stringify(result), redis.print);
+// client.set("harry","annie",redis.print);
 // client.hset("hash key", "hashtest 1", "some value", redis.print);
 // client.hset(["hash key", "hashtest 2", "some other value"], redis.print);
-const result = {
-	"name": "harry",
-	"score": 8 
-}
 const person1 = {
-	"name": "annie",
-	"score": 10
+	"name": "annie"
 }
 // client.hmset("hash key 5",4,JSON.stringify(person1),redis.print);
-client.hgetall("cab432tweets:Christine-Nixon", function (err, result) {
+client.get("cab432-trends-james", function (err, result) {
 	// let values = Object.values(replies).map(function(i){
 	// 	let json = JSON.parse(i);
 	// 	console.log(json.score);
@@ -34,21 +34,15 @@ client.hgetall("cab432tweets:Christine-Nixon", function (err, result) {
 	//   });
 	// values = values.filter(Number) 
 	// console.log(values);
-	tags = 'Christine-Nixon';
-	if(result){
-        let values = Object.values(result).map(function (i) {
-          let data = JSON.parse(i);
-          console.log(data.score);
-          if (data.tags === tags) {
-            return data.score;
-          }
-          else {
-            return '';
-          }
-        });
-        values = values.filter(Number);
-		//resolve(values);
-		console.log(values);
-    }
+	result = JSON.parse(result);
+	console.log(result.name);
+	
 
+});
+
+client.keys('cab432trends:*', function (err, keys) {
+	if (err) return console.log(err);
+	else{
+		console.log(keys);
+	}
 });
