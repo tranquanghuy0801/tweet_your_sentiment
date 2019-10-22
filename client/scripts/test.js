@@ -38,7 +38,7 @@ function parseData(rawData) {
       }
     })
   }    
-  console.log(word_count);  
+  //console.log(word_count);  
   return word_count;
 };
 
@@ -60,5 +60,7 @@ function saveCSV(word_count) {
 }
 
 let hello = parseData(commentsJSON);
-saveCSV(hello);
-console.log();
+hey = toString(hello);
+//console.log(hey);
+//saveCSV(hello);
+//console.log();
