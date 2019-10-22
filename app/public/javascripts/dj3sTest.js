@@ -1,28 +1,4 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<title><%= title %></title>
-		<meta charset="UTF-8">
-		<link rel='stylesheet' href='/stylesheets/style.css' />
-		<script type="text/javascript" src="/javascripts/dj3sTest.js"></script> 
-		<script src="https://d3js.org/d3.v4.js"></script>
-	</head>
-	<body>
-
-			
-			<!-- Load d3.js -->
-			
-			
-			<h1>Testing D3.js</h1>
-			
-			<!-- Create a div where the graph will take place -->
-			
-			<div id="my_dataviz"></div>
-			
-			
-			<!-- Test the D3Js -->
-			<script>
-			//var d3 = require('d3');
+const d3 = require("d3");
 
 // set the dimensions and margins of the graph
 var margin = {top: 10, right: 30, bottom: 40, left: 100},
@@ -39,8 +15,8 @@ var svg = d3.select("#my_dataviz")
           "translate(" + margin.left + "," + margin.top + ")");
 
 // Parse the Data
-d3.csv("../javascripts/wordCount.csv", function(data) {
-
+d3.csv("wordCount.csv", function(data) {
+  console.log("hello");
   // sort data
   data = data.slice(0,25)
 
@@ -90,28 +66,3 @@ d3.csv("../javascripts/wordCount.csv", function(data) {
       .style("fill", "#69b3a2")
       .attr("stroke", "black")
   })
-
-			</script> 
-		<!-- <h1><%= title %></h1>
-		<p>Welcome to <%= title %></p>
-		<h2>The trends in Australia</h2>
-		<form action ='/' method = 'GET'>
-			<% if(tags.length > 0)  { %>
-				<% for(i = 0; i < tags.length;i++) { %>
-					<ul>
-						<li>
-							<% let text = tags[i].split(' ').join('-') %>
-							<a href="/?tags=<%= text %>"><%= tags[i] %></a>
-						</li>
-					</ul>
-				<% } %>
-			<% } %>  
-		</form>
-		<% if(score !== undefined) { %>
-			<h3><%= score %>
-		<% } %> -->
-		<div class="inner-container">
-				<div id="my_dataviz"></div>
-		</div>
-	</body>
-</html>

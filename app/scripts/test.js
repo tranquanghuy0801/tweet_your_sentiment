@@ -59,6 +59,9 @@ function saveCSV(word_count) {
     .then( ()=> console.log('The CSV file was written Successfully'));
 }
 
+module.exports.parseData = parseData;
+module.exports.saveCSV = saveCSV;
+
 let hello = parseData(commentsJSON);
 hey = toString(hello);
 //console.log(hey);
