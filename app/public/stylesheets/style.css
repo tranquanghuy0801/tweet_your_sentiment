@@ -42,3 +42,12 @@ body {
   .sidenav {padding-top: 15px;}
   .sidenav a {font-size: 18px;}
 }
+
+.row {
+  display: flex;
+}
+
+.column {
+  flex: 50%;
+  margin-top:10px;
+}

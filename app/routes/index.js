@@ -9,6 +9,7 @@ const documentDB = require('../documentDB');
 const helper = require('../scripts/helper');
 const Twitter = require('twit');
 const server = 'http://localhost:3000';
+const createCSVWriter = require('csv-writer').createObjectCsvWriter;
 
 let redisClient = redis.createClient();
 
@@ -141,6 +142,55 @@ function getTags() {
 		})
 	});
 }
+
+// This function sorts iterates over an array of tweets and stores the word and the word counts in an objeect
+function parseDataArray(rawData) {
+	let word_count = {};
+	// Parse the Data
+	for (let i = 0; i < rawData.length; i++) {
+	  let textString = rawData[i];
+	  //console.log(textString)
+	  let words = textString.split(/[ '\-\(\)\*":;\[\]|{},.!?]+/);
+	  //console.log(words)
+	  words.forEach(function (word) {
+		var word = word.toLowerCase();
+		if (word != "" && common.indexOf(word) == -1 && word.length > 1) {
+		  if (word_count[word]) {
+			word_count[word]++;
+		  } else {
+			word_count[word] = 1;
+		  }
+		}
+	  })
+	}    
+	//console.log(word_count);  
+	return word_count;
+};
+
+// This function will turn the object of wordcounts and save it into a CSVfile for D3JS to visualise 
+function saveCSV(word_count, path) {
+	const csvWriter = createCSVWriter( {
+	  path: path,
+	  header: [
+		{id: 'word', title:'Word'},
+		{id: 'frequency', title: 'Frequency'}
+	  ]
+	});
+	data = [];
+	for (let key in word_count) {
+		let str = "{ word: " + "'"+ key + "'" + "," + " frequency:" + "'" + word_count[key] +"'" + "}";
+		eval('var obj='+str);
+		//console.log(obj)
+		data.push(obj);
+		
+	}
+  
+	console.log(data);
+	csvWriter
+	  .writeRecords(data)
+	  .then( ()=> console.log('The CSV file was written Successfully'));
+}
+  
 
 // Router
 router.use(function (req, res, next) {
@@ -285,6 +335,10 @@ router.get('/', function (req, res, next) {
 			res.render('index',  { tags: undefined, trends: result, score: undefined });
 		}
 	});
+});
+
+router.get('/analysis', function (req,res,next) {
+	
 });
 
 module.exports = router;

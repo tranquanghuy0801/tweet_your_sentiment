@@ -20,14 +20,19 @@
 <h1>Visualization Dashboard</h1>
 
 <!-- Create a div where the graph will take place -->
+<div class='row'>
+	<div class="column" id="my_dataviz"></div>
+	<% if(tags !== undefined ) { %>
+		<h3>The total for the keyword <%= tags.split('-').join(' ') %> :</h3>
+	<% } %> 
+	<% if(score !== undefined) { %>
+		<h3><%= score %></h3>
+	<% } %>
+	
+	<div class ="column" id="my_dataviz2"></div>
 
-<div id="my_dataviz"></div>
-<% if(tags !== undefined ) { %>
-	<h3>The total for the keyword <%= tags.split('-').join(' ') %> :</h3>
-<% } %> 
-<% if(score !== undefined) { %>
-	<h3><%= score %></h3>
-<% } %>
+</div>
+
 
 
 <!-- Test the D3Js -->
@@ -70,6 +75,15 @@
 			.attr("transform", "translate(-10,0)rotate(-45)")
 			.style("text-anchor", "end");
 
+    	// Add the text label for the x axis
+    	svg.append("text")
+		.attr("transform", "translate(" + (width / 2) + " ," + (height + margin.bottom) + ")")
+		.style("font-size","14px")
+        .style("text-anchor", "middle")
+		.text("Word Count");
+		
+		
+		
 		// Y axis
 		var y = d3.scaleBand()
 			.range([0, height])
@@ -77,6 +91,25 @@
 			.padding(1);
 		svg.append("g")
 			.call(d3.axisLeft(y))
+
+		// Add the text label for the Y axis
+		svg.append("text")
+			.style("font-size","14px")
+			.attr("transform", "rotate(-90)")
+			.attr("y", 0 - margin.left)
+			.attr("x",0 - (height / 2))
+			.attr("dy", "1em")
+			.style("text-anchor", "middle")
+			.text("Word");
+		
+		// Add the Title
+		svg.append("text")
+			.attr("x", (width / 2))             
+			.attr("y", 0 - (margin.top / 2)+10)
+			.attr("text-anchor", "middle")  
+			.style("font-size", "16px") 
+			.style("text-decoration", "underline")  
+			.text("Common words (Good Sentiment)");
 
 		// Lines
 		svg.selectAll("myline")
@@ -91,6 +124,105 @@
 
 		// Circles
 		svg.selectAll("mycircle")
+			.data(data)
+			.enter()
+			.append("circle")
+			.attr("cx", function (d) { return x(d.Frequency); })
+			.attr("cy", function (d) { return y(d.Word); })
+			.attr("r", "7")
+			.style("fill", "#69b3a2")
+			.attr("stroke", "black")
+	})
+
+</script>
+
+<script>
+	//var d3 = require('d3');
+
+	// set the dimensions and margins of the graph
+	var margin = { top: 10, right: 30, bottom: 40, left: 100 },
+		width = 460 - margin.left - margin.right,
+		height = 500 - margin.top - margin.bottom;
+
+	// append the svg object to the body of the page
+	var svg2 = d3.select("#my_dataviz2")
+		.append("svg")
+		.attr("width", width + margin.left + margin.right)
+		.attr("height", height + margin.top + margin.bottom)
+		.append("g")
+		.attr("transform",
+			"translate(" + margin.left + "," + margin.top + ")");
+
+	// Parse the Data
+	d3.csv("../javascripts/test.csv", function (data) {
+
+		// sort data
+		data = data.slice(0, 25)
+
+		data.sort(function (b, a) {
+			return a.Frequency - b.Frequency;
+		});
+
+
+		// Add X axis
+		var x = d3.scaleLinear()
+			.domain([0, d3.max(data, function (d) { return +d.Frequency; })])
+			.range([0, width]);
+		svg2.append("g")
+			.attr("transform", "translate(0," + height + ")")
+			.call(d3.axisBottom(x))
+			.selectAll("text")
+			.attr("transform", "translate(-10,0)rotate(-45)")
+			.style("text-anchor", "end");
+
+		// Add the text label for the x axis
+		svg2.append("text")
+			.attr("transform", "translate(" + (width / 2) + " ," + (height + margin.bottom) + ")")
+			.style("font-size","14px")
+			.style("text-anchor", "middle")
+			.text("Word Count");
+
+		// Y axis
+		var y = d3.scaleBand()
+			.range([0, height])
+			.domain(data.map(function (d) { return d.Word; }))
+			.padding(1);
+		svg2.append("g")
+			.call(d3.axisLeft(y))
+
+		// Add the text label for the Y axis
+		svg2.append("text")
+			.style("font-size","14px")
+			.attr("transform", "rotate(-90)")
+			.attr("y", 0 - margin.left)
+			.attr("x",0 - (height / 2))
+			.attr("dy", "1em")
+			.style("text-anchor", "middle")
+			.text("Word");
+
+
+		// Add the Title
+		svg2.append("text")
+			.attr("x", (width / 2))             
+			.attr("y", 0 - (margin.top / 2)+10)
+			.attr("text-anchor", "middle")  
+			.style("font-size", "16px") 
+			.style("text-decoration", "underline")  
+			.text("Common words (Bad Sentiment)");
+
+		// Lines
+		svg2.selectAll("myline")
+			.data(data)
+			.enter()
+			.append("line")
+			.attr("x1", function (d) { return x(d.Frequency); })
+			.attr("x2", x(0))
+			.attr("y1", function (d) { return y(d.Word); })
+			.attr("y2", function (d) { return y(d.Word); })
+			.attr("stroke", "grey")
+
+		// Circles
+		svg2.selectAll("mycircle")
 			.data(data)
 			.enter()
 			.append("circle")
