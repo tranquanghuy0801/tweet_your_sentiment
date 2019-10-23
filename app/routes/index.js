@@ -77,9 +77,9 @@ function getTrends() {
 	});
 }
 
-// getTrends();
-// // Run every 15 seconds to update the trend topics 
-// setInterval(getTrends, 200000);
+getTrends();
+// Run every 15 seconds to update the trend topics 
+setInterval(getTrends, 200000);
 
 // Extract values from Redis or azure for a specific keyword 
 function getColumn(column, tags) {
@@ -251,8 +251,8 @@ async function renderIndex(res,result,tags){
 						}
 					})
 					// Save in the texts in CSV folder for visualization
-					helper.saveCSV(helper.parseDataArray(good_sentiment),"public/javascripts/wordCount.csv");
-					helper.saveCSV(helper.parseDataArray(bad_sentiment),"public/javascripts/test.csv");
+					helper.saveCSV(helper.parseDataArray(good_sentiment),"public/javascripts/good_sentiment.csv");
+					helper.saveCSV(helper.parseDataArray(bad_sentiment),"public/javascripts/bad_sentiment.csv");
 				}
 				res.render('index', { tags: tags, trends: result});
 			}).catch(err => {
@@ -271,8 +271,8 @@ async function renderIndex(res,result,tags){
 				}
 			})
 			// Save in the texts in CSV folder for visualization
-			helper.saveCSV(helper.parseDataArray(good_sentiment),"public/javascripts/wordCount.csv");
-			helper.saveCSV(helper.parseDataArray(bad_sentiment),"public/javascripts/test.csv");
+			helper.saveCSV(helper.parseDataArray(good_sentiment),"public/javascripts/good_sentiment.csv");
+			helper.saveCSV(helper.parseDataArray(bad_sentiment),"public/javascripts/bad_sentiment.csv");
 			res.render('index',  { tags: tags, trends: result });
 		}
 	}).catch(err => {
@@ -282,7 +282,14 @@ async function renderIndex(res,result,tags){
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-	let tags = req.query.tags;
+	let tags;
+	if (req.query.userInput){
+		tags = req.query.userInput
+		tags = tags.split(' ').join('-');
+	}
+	else{
+		tags = req.query.tags;
+	}
 	getTags().then(async result => {
 		result = result.map(text => {
 			return text.replace(/[^\w\s]/gi, ' ');

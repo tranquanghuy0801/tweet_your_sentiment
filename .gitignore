@@ -4,3 +4,4 @@ server_folder/
 *.pdf 
 .DS_Store
 .vscode
+*.docx

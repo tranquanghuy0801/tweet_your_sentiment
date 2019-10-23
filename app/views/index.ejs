@@ -1,4 +1,5 @@
 <div class="sidenav">
+	<a href="/" class="logo">Twitter Word Analysis</a>
 	<h2 class="intro">The trends in Australia</h2>
 	<form action='/' method='GET'>
 
@@ -20,13 +21,15 @@
 	<form class="search-container" action='/' method="GET">
 		<h1>Welcome to Twitter Word Analysis</h1>
 		<br>
-		<input type="text" id="search-bar" placeholder="Enter your keyword to get started">
+		<input type="text" id="search-bar" name = "userInput" placeholder="Enter your keyword to get started">
 		<a href="#"><img class="search-icon"
 				src="http://www.endlessicons.com/wp-content/uploads/2012/12/search-icon.png"></a>
 	</form>
 <% } else { %>
 	<h1>Visualization Dashboard</h1>
 	
+	<h2> The result for keyword: <%= tags.split('-').join(' ') %></h2>
+	<br>
 	<!-- Create a div where the graph will take place -->
 	<div class='row'>
 		<div class="column" id="my_dataviz"></div>
@@ -55,7 +58,7 @@
 			"translate(" + margin.left + "," + margin.top + ")");
 
 	// Parse the Data
-	d3.csv("../javascripts/wordCount.csv", function (data) {
+	d3.csv("../javascripts/good_sentiment.csv", function (data) {
 
 		// sort data
 		data = data.slice(0, 25)
@@ -155,7 +158,7 @@
 			"translate(" + margin.left + "," + margin.top + ")");
 
 	// Parse the Data
-	d3.csv("../javascripts/test.csv", function (data) {
+	d3.csv("../javascripts/bad_sentiment.csv", function (data) {
 
 		// sort data
 		data = data.slice(0, 25)

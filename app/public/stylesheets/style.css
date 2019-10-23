@@ -1,4 +1,9 @@
-
+.sidenav .logo {
+  padding: 6px 8px 6px 16px;
+  font-size: 25px;
+  background: whitesmoke;
+  color: black;
+}
 
 .sidenav {
   height: 100%;
@@ -15,7 +20,7 @@
 .sidenav .intro{
   padding: 6px 8px 6px 16px;
   font-size: 20px;
-  color: whitesmoke;
+  color: #ca5252;
 }
 
 .sidenav a {
