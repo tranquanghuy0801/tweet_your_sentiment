@@ -16,22 +16,23 @@
 </div>
 
 <div class="main">
-
-<h1>Visualization Dashboard</h1>
-
-<!-- Create a div where the graph will take place -->
-<div class='row'>
-	<div class="column" id="my_dataviz"></div>
-	<% if(tags !== undefined ) { %>
-		<h3>The total for the keyword <%= tags.split('-').join(' ') %> :</h3>
-	<% } %> 
-	<% if(score !== undefined) { %>
-		<h3><%= score %></h3>
-	<% } %>
+<% if(tags === undefined) { %>
+	<form class="search-container" action='/' method="GET">
+		<h1>Welcome to Twitter Word Analysis</h1>
+		<br>
+		<input type="text" id="search-bar" placeholder="Enter your keyword to get started">
+		<a href="#"><img class="search-icon"
+				src="http://www.endlessicons.com/wp-content/uploads/2012/12/search-icon.png"></a>
+	</form>
+<% } else { %>
+	<h1>Visualization Dashboard</h1>
 	
-	<div class ="column" id="my_dataviz2"></div>
-
-</div>
+	<!-- Create a div where the graph will take place -->
+	<div class='row'>
+		<div class="column" id="my_dataviz"></div>
+		<div class="column" id="my_dataviz2"></div>
+	</div>
+<% } %>
 
 
 
@@ -75,11 +76,11 @@
 			.attr("transform", "translate(-10,0)rotate(-45)")
 			.style("text-anchor", "end");
 
-    	// Add the text label for the x axis
-    	svg.append("text")
+		// Add the text label for the x axis
+		svg.append("text")
 		.attr("transform", "translate(" + (width / 2) + " ," + (height + margin.bottom) + ")")
 		.style("font-size","14px")
-        .style("text-anchor", "middle")
+		.style("text-anchor", "middle")
 		.text("Word Count");
 		
 		
@@ -236,3 +237,4 @@
 </script>
 
 </div>
+

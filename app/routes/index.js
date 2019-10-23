@@ -9,17 +9,17 @@ const documentDB = require('../documentDB');
 const helper = require('../scripts/helper');
 const Twitter = require('twit');
 const server = 'http://localhost:3000';
-const createCSVWriter = require('csv-writer').createObjectCsvWriter;
 
+// Create Redis Database 
 let redisClient = redis.createClient();
-
 redisClient.on('connect', function(){
 	console.log('Connected to Redis...');
 });
-
 redisClient.on('error', (err) => { console.log("Error " + err);
 });
 
+// Create Database and two collections to save tweets and trends 
+// in CosmoDB azure 
 documentDB.getDatabase().then(() => {
 	documentDB.getCollection(config.creds.tweetCollection.id);
 }).then(() => {
@@ -79,10 +79,10 @@ function getTrends() {
 
 // getTrends();
 // // Run every 15 seconds to update the trend topics 
-// setInterval(getTrends, 90000);
+// setInterval(getTrends, 200000);
 
-// Get all scores for a specific trend keyword 
-function getScores(column, tags) {
+// Extract values from Redis or azure for a specific keyword 
+function getColumn(column, tags) {
 	let redisKey = 'cab432tweets:' + tags;
 	return new Promise((resolve) => {
 		redisClient.hgetall(redisKey,function(err,result){
@@ -91,13 +91,13 @@ function getScores(column, tags) {
 				let values = Object.values(result).map(function (i) {
 					let data = JSON.parse(i);
 					if (data.tags === tags) {
-						return data.score;
+						return data;
 					}
 					else {
 						return '';
 					}
 				});
-				values = values.filter(Number);
+				//values = values.filter(Number);
 				resolve(values);
 			}
 			else{
@@ -143,55 +143,6 @@ function getTags() {
 	});
 }
 
-// This function sorts iterates over an array of tweets and stores the word and the word counts in an objeect
-function parseDataArray(rawData) {
-	let word_count = {};
-	// Parse the Data
-	for (let i = 0; i < rawData.length; i++) {
-	  let textString = rawData[i];
-	  //console.log(textString)
-	  let words = textString.split(/[ '\-\(\)\*":;\[\]|{},.!?]+/);
-	  //console.log(words)
-	  words.forEach(function (word) {
-		var word = word.toLowerCase();
-		if (word != "" && common.indexOf(word) == -1 && word.length > 1) {
-		  if (word_count[word]) {
-			word_count[word]++;
-		  } else {
-			word_count[word] = 1;
-		  }
-		}
-	  })
-	}    
-	//console.log(word_count);  
-	return word_count;
-};
-
-// This function will turn the object of wordcounts and save it into a CSVfile for D3JS to visualise 
-function saveCSV(word_count, path) {
-	const csvWriter = createCSVWriter( {
-	  path: path,
-	  header: [
-		{id: 'word', title:'Word'},
-		{id: 'frequency', title: 'Frequency'}
-	  ]
-	});
-	data = [];
-	for (let key in word_count) {
-		let str = "{ word: " + "'"+ key + "'" + "," + " frequency:" + "'" + word_count[key] +"'" + "}";
-		eval('var obj='+str);
-		//console.log(obj)
-		data.push(obj);
-		
-	}
-  
-	console.log(data);
-	csvWriter
-	  .writeRecords(data)
-	  .then( ()=> console.log('The CSV file was written Successfully'));
-}
-  
-
 // Router
 router.use(function (req, res, next) {
 	console.log("Twitter Stream Incoming: /" + req.method);
@@ -206,6 +157,7 @@ router.post('/stream', (req, res, next) => {
 	if (stream === null) {
 		console.log('New Twitter Stream!');
 		stream = client.stream('statuses/filter', { track: tags, language: 'en' });
+		// Start Streaming 
 		stream.on('tweet', function (tweet) {
 			helper.parseTweets(tweet).then(result => {
 				helper.sentimentAnalysis(result, tags, tweet.id_str).then(result => {
@@ -234,6 +186,7 @@ router.post('/stream', (req, res, next) => {
 	else {
 		stream.stop();
 		console.log("Stop the old stream and start the new stream!");
+		// Remove old stream to create new stream 
 		stream = client.stream('statuses/filter', { track: tags, language: 'en' });
 		stream.on('tweet', function (tweet) {
 			helper.parseTweets(tweet).then(result => {
@@ -241,7 +194,7 @@ router.post('/stream', (req, res, next) => {
 					redisClient.hgetall(redisKey, (err, data) => {
 						if(data){
 								if(data[result.id] === undefined){
-									console.log("Save to both Redis and S3");
+									console.log("Save to both Redis and Azure");
 									redisClient.hset(redisKey, result.id, JSON.stringify(result));
 									documentDB.getDocument(config.creds.tweetCollection.id, result);
 								}else{
@@ -279,31 +232,51 @@ router.post('/stream', (req, res, next) => {
 
 // Function to render index page 
 async function renderIndex(res,result,tags){
-	let score;
-	await getScores('score', tags).then(async data => {
-		//result.score = data;
-		// res.json(result);
+	await getColumn('all', tags).then(async data => {
+		let good_sentiment = [];
+		let bad_sentiment = [];
+		console.log(data);
 		if (data.length === 0) {
 			let delayres = await helper.delay(3000);
-			await getScores('score', tags).then(async data => {
-				if(data.length === 0){
-					score = 0;
+			await getColumn('all', tags).then(async data => {
+				if(data.length !== 0){
+					data.forEach(element => {
+						// Extract good and neural score texts 
+						if(element.score >= 0){
+							good_sentiment.push(element.text);
+						}
+						// Extract bad score texts 
+						else{
+							bad_sentiment.push(element.text);
+						}
+					})
+					// Save in the texts in CSV folder for visualization
+					helper.saveCSV(helper.parseDataArray(good_sentiment),"public/javascripts/wordCount.csv");
+					helper.saveCSV(helper.parseDataArray(bad_sentiment),"public/javascripts/test.csv");
 				}
-				else{
-					score = data.reduce(function (a, b) { return a + b; });
-				}
-				res.render('index', { tags: tags, trends: result, score: score });
+				res.render('index', { tags: tags, trends: result});
 			}).catch(err => {
 				console.log(err);
 			})
 		}
 		else {
-			score = data.reduce(function (a, b) { return a + b; });
-			res.render('index',  { tags: tags, trends: result, score: score });
+			data.forEach(element => {
+				// Extract good and neural score texts 
+				if(element.score >= 0){
+					good_sentiment.push(element.text);
+				}
+				// Extract bad score texts 
+				else{
+					bad_sentiment.push(element.text);
+				}
+			})
+			// Save in the texts in CSV folder for visualization
+			helper.saveCSV(helper.parseDataArray(good_sentiment),"public/javascripts/wordCount.csv");
+			helper.saveCSV(helper.parseDataArray(bad_sentiment),"public/javascripts/test.csv");
+			res.render('index',  { tags: tags, trends: result });
 		}
 	}).catch(err => {
 		console.log(err);
-
 	})
 }
 
@@ -314,16 +287,14 @@ router.get('/', function (req, res, next) {
 		result = result.map(text => {
 			return text.replace(/[^\w\s]/gi, ' ');
 		})
-		// let json;
 		if (tags) {
+			// Create a POST request to start streaming 
 			request({
 				url: server + '/stream',
 				method: 'POST',
 				form: { tags: tags }
 			}, function (err, response, body) {
 				if (!err) {
-					// json = JSON.parse(body);
-					// console.log(json);
 					console.log('Stream STOP Response: ' + response);
 				} else {
 					console.log('Unable to connect to stream server!');
@@ -332,13 +303,9 @@ router.get('/', function (req, res, next) {
 			renderIndex(res,result,tags);
 		}
 		else {
-			res.render('index',  { tags: undefined, trends: result, score: undefined });
+			res.render('index',  { tags: undefined, trends: result});
 		}
 	});
-});
-
-router.get('/analysis', function (req,res,next) {
-	
 });
 
 module.exports = router;
