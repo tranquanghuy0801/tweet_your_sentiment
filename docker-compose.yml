@@ -1,0 +1,20 @@
+version: '3'
+services:
+  myapp:
+    container_name: myapp
+    restart: always
+    build: .
+    ports:
+      - '3000:3000'
+    networks:
+      - redis
+    depends_on:
+      - redis
+  redis:
+    image: redis:latest
+    command: ["redis-server", "--bind", "redis", "--port", "6379"]
+    networks:
+      - redis
+networks:
+  redis:
+    driver: bridge

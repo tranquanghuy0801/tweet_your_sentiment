@@ -10,8 +10,10 @@ const helper = require('../scripts/helper');
 const Twitter = require('twit');
 const server = 'http://localhost:3000';
 
+const redisHost = 'redis';
+const redisPort = '6379';
 // Create Redis Database 
-let redisClient = redis.createClient();
+let redisClient = redis.createClient(redisPort,redisHost);
 redisClient.on('connect', function(){
 	console.log('Connected to Redis...');
 });
