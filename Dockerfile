@@ -8,7 +8,7 @@ WORKDIR /var/www/myapp
 COPY app/package.json ./
 
 # Run npm install - install the npm dependencies
-RUN npm install && npm install -g pm2 
+RUN npm install
 
 # Copy application source
 COPY /app .
@@ -22,5 +22,5 @@ EXPOSE 3000
 
 # Start the application
 # CMD [ "pm2", "start", "ecosystem.config.js", "--env", "production", "--no-daemon" ]
-CMD [ "pm2-runtime", "start", "app.js"]
+CMD [ "npm","start"]
 

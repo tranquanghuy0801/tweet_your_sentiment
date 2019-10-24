@@ -13,7 +13,8 @@ const server = 'http://localhost:3000';
 const redisHost = 'redis';
 const redisPort = '6379';
 // Create Redis Database 
-let redisClient = redis.createClient(redisPort,redisHost);
+let redisClient = redis.createClient();
+//let redisClient = redis.createClient(redisPort,redisHost);
 redisClient.on('connect', function(){
 	console.log('Connected to Redis...');
 });
@@ -234,6 +235,7 @@ router.post('/stream', (req, res, next) => {
 
 // Function to render index page 
 async function renderIndex(res,result,tags){
+	let score = 0;
 	await getColumn('all', tags).then(async data => {
 		let good_sentiment = [];
 		let bad_sentiment = [];
@@ -243,6 +245,7 @@ async function renderIndex(res,result,tags){
 			await getColumn('all', tags).then(async data => {
 				if(data.length !== 0){
 					data.forEach(element => {
+						score += element.score;
 						// Extract good and neural score texts 
 						if(element.score >= 0){
 							good_sentiment.push(element.text);
@@ -256,13 +259,14 @@ async function renderIndex(res,result,tags){
 					helper.saveCSV(helper.parseDataArray(good_sentiment),"public/javascripts/good_sentiment.csv");
 					helper.saveCSV(helper.parseDataArray(bad_sentiment),"public/javascripts/bad_sentiment.csv");
 				}
-				res.render('index', { tags: tags, trends: result});
+				res.render('index', { tags: tags, trends: result, score: score});
 			}).catch(err => {
 				console.log(err);
 			})
 		}
 		else {
 			data.forEach(element => {
+				score += element.score;
 				// Extract good and neural score texts 
 				if(element.score >= 0){
 					good_sentiment.push(element.text);
@@ -275,7 +279,7 @@ async function renderIndex(res,result,tags){
 			// Save in the texts in CSV folder for visualization
 			helper.saveCSV(helper.parseDataArray(good_sentiment),"public/javascripts/good_sentiment.csv");
 			helper.saveCSV(helper.parseDataArray(bad_sentiment),"public/javascripts/bad_sentiment.csv");
-			res.render('index',  { tags: tags, trends: result });
+			res.render('index',  { tags: tags, trends: result, score: score });
 		}
 	}).catch(err => {
 		console.log(err);
@@ -288,6 +292,7 @@ router.get('/', function (req, res, next) {
 	if (req.query.userInput){
 		tags = req.query.userInput
 		tags = tags.split(' ').join('-');
+		console.log(tags);
 	}
 	else{
 		tags = req.query.tags;
@@ -312,7 +317,7 @@ router.get('/', function (req, res, next) {
 			renderIndex(res,result,tags);
 		}
 		else {
-			res.render('index',  { tags: undefined, trends: result});
+			res.render('index',  { tags: undefined, trends: result, score: undefined});
 		}
 	});
 });

@@ -41,6 +41,14 @@
   padding: 0px 10px;
 }
 
+.main .title-dashboard{
+  color: #f1ecec;
+  background-color: #111;
+  width: 430px;
+  height: 50px;
+  display: block;
+}
+
 @media screen and (max-height: 450px) {
   .sidenav {padding-top: 15px;}
   .sidenav a {font-size: 18px;}

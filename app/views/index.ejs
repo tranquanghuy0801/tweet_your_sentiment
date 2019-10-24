@@ -26,9 +26,11 @@
 				src="http://www.endlessicons.com/wp-content/uploads/2012/12/search-icon.png"></a>
 	</form>
 <% } else { %>
-	<h1>Visualization Dashboard</h1>
-	
+	<h1 class="title-dashboard">Visualization Dashboard</h1>
 	<h2> The result for keyword: <%= tags.split('-').join(' ') %></h2>
+	<% if(score)  { %>
+		<h2>Total sentiment score: <%= score %></h2>
+	<% } %>
 	<br>
 	<!-- Create a div where the graph will take place -->
 	<div class='row'>
