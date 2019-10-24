@@ -7,7 +7,7 @@ const creds = {
     },
 	endpoint: "https://cab432-assignment2.documents.azure.com:443/",
 	primaryKey: {
-		"id": "t3jacVS6dEwsUk0XQbHGXWAx36X8oOoBy4eQb6eDUj8GNqXSYtZrI62X5JwRQNs8ytRy1x7In50LdSJQEg55rA=="
+		"id": "ngaiWVNWlqD69dIhGcstxgnjAFcHYhAcBhWtYdk4gMC44d5wuhkudMyzmQwadBNAxZM4ju4dKefHenDyNOV1aA=="
 	},
 	database: {
 		"id" : "cab432-assignment-cloud"
