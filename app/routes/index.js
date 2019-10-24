@@ -8,8 +8,8 @@ const googleTrends = require('google-trends-api');
 const documentDB = require('../documentDB');
 const helper = require('../scripts/helper');
 const Twitter = require('twit');
-const server = 'http://localhost:3000';
-
+//const server = 'http://localhost:3000';
+const server = 'http://cab432-assignment-cloud.australiaeast.cloudapp.azure.com:3000'
 const redisHost = 'redis';
 const redisPort = '6379';
 // Create Redis Database 
