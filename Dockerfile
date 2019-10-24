@@ -8,19 +8,19 @@ WORKDIR /var/www/myapp
 COPY app/package.json ./
 
 # Run npm install - install the npm dependencies
-RUN npm install
+RUN npm install && npm install -g pm2 
 
-RUN npm install -g pm2
 # Copy application source
 COPY /app .
 
-COPY ecosystem.config.js .
+# COPY ecosystem.config.js .
 
-# Expose application ports - (4300 - for API and 4301 - for front end)
+# Expose application ports 3000
 EXPOSE 3000
 
 # Generate build 
 
 # Start the application
-CMD [ "pm2", "start", "ecosystem.config.js", "--env", "production", "--no-daemon" ]
+# CMD [ "pm2", "start", "ecosystem.config.js", "--env", "production", "--no-daemon" ]
+CMD [ "pm2-runtime", "start", "app.js"]
 
