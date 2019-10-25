@@ -9,17 +9,7 @@ const documentDB = require('../documentDB');
 const helper = require('../scripts/helper');
 const Twitter = require('twit');
 //const server = 'http://localhost:3000';
-const server = 'http://cab432-assignment-cloud.australiaeast.cloudapp.azure.com:3000'
-const redisHost = 'redis';
-const redisPort = '6379';
-// Create Redis Database 
-//let redisClient = redis.createClient();
-let redisClient = redis.createClient(redisPort,redisHost);
-redisClient.on('connect', function(){
-	console.log('Connected to Redis...');
-});
-redisClient.on('error', (err) => { console.log("Error " + err);
-});
+const server = 'http://cab432-assignment-cloud.australiaeast.cloudapp.azure.com'
 
 // Create Database and two collections to save tweets and trends 
 // in CosmoDB azure 
@@ -31,6 +21,17 @@ documentDB.getDatabase().then(() => {
 	console.log(err);
 })
 
+const redisHost = 'redis'; // Redis HostName
+const redisPort = '6379';	// Redis Port 
+// Create Redis Database 
+//let redisClient = redis.createClient();
+let redisClient = redis.createClient(redisPort,redisHost);
+redisClient.on('connect', function(){
+	console.log('Connected to Redis...');
+});
+redisClient.on('error', (err) => { console.log("Error " + err);
+});
+
 // Twit Configuration
 const client = new Twitter({
 	consumer_key: config.creds.twitter.consumer_key,
@@ -39,9 +40,10 @@ const client = new Twitter({
 	access_token_secret: config.creds.twitter.access_token_secret
 })
 
+// Initialize the stream 
 let stream = null;
 
-// Function to get trends from Google Trends 
+// Function to get trends from Google Trends
 function getTrends() {
 	googleTrends.realTimeTrends({
 		geo: 'AU',
@@ -63,14 +65,20 @@ function getTrends() {
 								console.log("Data in Redis");
 							}
 							else {
-								if (documentDB.doesDocumentExist(config.creds.trendCollection.id, result) === null) {
-									console.log("Save trends to both Redis and Azure");
-									redisClient.setex(redisKey, 3600, JSON.stringify(result));
-									documentDB.getDocument(config.creds.trendCollection.id, result);
-								} else {
-									console.log("The keyword exists in DocumentDB database, save to Redis");
-									redisClient.setex(redisKey, 3600, JSON.stringify(result));
-								}
+								documentDB.queryCollection(config.creds.trendCollection.id, 'id', keyword)
+									.then(results => {
+										if (results.length > 0) {
+											console.log("The keyword exists in DocumentDB database, save to Redis");
+											redisClient.setex(redisKey, 3600, JSON.stringify(result));
+										}
+										else{
+											console.log("Save trends to both Redis and Azure");
+											redisClient.setex(redisKey, 3600, JSON.stringify(result));
+											documentDB.getDocument(config.creds.trendCollection.id, result);
+										}
+									}).catch(err => {
+										console.log(err);
+									})
 							}
 						})
 					})
@@ -159,9 +167,11 @@ router.post('/stream', (req, res, next) => {
 	let redisKey = 'cab432tweets:' + req.body.tags;
 	if (stream === null) {
 		console.log('New Twitter Stream!');
+		// Start the stream with tracking the tags 
 		stream = client.stream('statuses/filter', { track: tags, language: 'en' });
 		// Start Streaming 
 		stream.on('tweet', function (tweet) {
+			// Extract tweet from raw data 
 			helper.parseTweets(tweet).then(result => {
 				helper.sentimentAnalysis(result, tags, tweet.id_str).then(result => {
 					redisClient.hgetall(redisKey, (err, data) => {
@@ -193,6 +203,7 @@ router.post('/stream', (req, res, next) => {
 		stream = client.stream('statuses/filter', { track: tags, language: 'en' });
 		stream.on('tweet', function (tweet) {
 			helper.parseTweets(tweet).then(result => {
+				// Extract tweet from raw data 
 				helper.sentimentAnalysis(result, tags, tweet.id_str).then(result => {
 					redisClient.hgetall(redisKey, (err, data) => {
 						if(data){
@@ -201,6 +212,7 @@ router.post('/stream', (req, res, next) => {
 									redisClient.hset(redisKey, result.id, JSON.stringify(result));
 									documentDB.getDocument(config.creds.tweetCollection.id, result);
 								}else{
+									// Found data in 
 									console.log("The tweet exists in Redis");
 								}
 						}
@@ -241,6 +253,7 @@ async function renderIndex(res,result,tags){
 		let bad_sentiment = [];
 		console.log(data);
 		if (data.length === 0) {
+			// Wait for the filtered data come into the database 
 			let delayres = await helper.delay(3000);
 			await getColumn('all', tags).then(async data => {
 				if(data.length !== 0){
