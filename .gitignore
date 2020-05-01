@@ -1,7 +1,7 @@
 test_folder/
 client_folder/
 server_folder/
-*.pdf 
 .DS_Store
 .vscode
 *.docx
+node_modules
