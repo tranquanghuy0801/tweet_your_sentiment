@@ -1,6 +1,6 @@
 # CAB432 Cloud Assignment
 
-This is the assignment 2 of Unit CAB432 Cloud Computing (Semester 2, 2019). The focus of this assessment task is to explore a scalable, load-balanced cloud application with a stateless architecture. 
+This is the assignment 2 of Unit CAB432 Cloud Computing (Semester 2, 2019). The focus of this assessment task is to explore a scalable, load-balanced cloud application with a stateless architecture.
 
 ## Tweet Your Sentiment 
 
@@ -56,7 +56,7 @@ ACCESS_TOKEN_SECRET=********
 ENDPOINT=******** //endpoint of Azure CosmosDB
 PRIMARY_KEY=******** // primary key of Azure CosmosDB
 DATABASE=******* // name of CosmoDB Database
-TWEET_COLLECTION=******* // name of tweets collections
+TWEET_COLLECTION=******* // name of tweets
 TREND_COLLECTION=******* // name of trends collections
 
 ```
